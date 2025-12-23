@@ -2,7 +2,11 @@
 name = "beany"
 version = "0.1.0"
 edition = "2024"
+authors = ["Dawid Ratajczak"]
+description = "Lighweight DI container for Rust in spring style"
+license = "MIT"
+repository = "https://github.com/actixboot/beany"
 
 [dependencies]
 parking_lot = "0.12.5"
-beany_codegen = { path = "beany_codegen" }
+beany_codegen = { version = "0.1.0", path = "beany_codegen" }

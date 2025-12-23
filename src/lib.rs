@@ -54,6 +54,6 @@ mod tests {
   fn test_di() {
     let ctx = BeansContext::default();
 
-    let test_service: Arc<TestService> = ctx.get();
+    let test_service = ctx.get::<TestService>();
   }
 }

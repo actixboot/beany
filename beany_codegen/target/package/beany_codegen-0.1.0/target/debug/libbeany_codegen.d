@@ -1,0 +1,1 @@
+/home/dejwus/Projects/rust/connector/beany_codegen/target/package/beany_codegen-0.1.0/target/debug/libbeany_codegen.so: /home/dejwus/Projects/rust/connector/beany_codegen/target/package/beany_codegen-0.1.0/src/lib.rs
