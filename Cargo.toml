@@ -1,0 +1,8 @@
+[package]
+name = "beany"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+parking_lot = "0.12.5"
+beany_codegen = { path = "beany_codegen" }
