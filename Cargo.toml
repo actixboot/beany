@@ -10,3 +10,7 @@ repository = "https://github.com/actixboot/beany"
 [dependencies]
 parking_lot = "0.12.5"
 beany_codegen = { version = "0.1.2", path = "beany_codegen" }
+tokio = { version = "1", features = ["sync"] }
+
+[dev-dependencies]
+tokio = { version = "1", features = ["macros", "rt"] }

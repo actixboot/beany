@@ -13,6 +13,12 @@ pub fn derive_bean(input: TokenStream) -> TokenStream {
     .unwrap_or_else(|err| err.to_compile_error().into())
 }
 
+#[proc_macro_derive(AsyncBean)]
+pub fn derive_async_bean(input: TokenStream) -> TokenStream {
+  impl_derive_async_bean(parse_macro_input!(input as DeriveInput))
+    .unwrap_or_else(|err| err.to_compile_error().into())
+}
+
 fn impl_derive_bean(input: DeriveInput) -> syn::Result<TokenStream> {
   let ident = &input.ident;
   let fields = get_fields(&input)?
@@ -54,6 +60,40 @@ fn is_arc_type(ty: &syn::Type) -> bool {
     }
   }
   false
+}
+
+fn impl_derive_async_bean(input: DeriveInput) -> syn::Result<TokenStream> {
+  let ident = &input.ident;
+  let fields = get_fields(&input)?
+    .iter()
+    .map(|field| {
+      let field_ident = &field.ident;
+      let field_ty = &field.ty;
+
+      if is_arc_type(field_ty) {
+        quote! {
+            #field_ident: context.get_async().await
+        }
+      } else {
+        quote! {
+            #field_ident: (*context.get_async::<#field_ty>().await).clone()
+        }
+      }
+    })
+    .collect::<Vec<_>>();
+
+  Ok(
+    quote! {
+        impl beany::AsyncBean for #ident {
+            async fn create(context: &beany::BeansContext) -> Self {
+                Self {
+                    #(#fields),*
+                }
+            }
+        }
+    }
+    .into(),
+  )
 }
 
 fn get_fields(input: &DeriveInput) -> syn::Result<Vec<Field>> {
