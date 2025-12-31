@@ -19,6 +19,18 @@ pub fn derive_async_bean(input: TokenStream) -> TokenStream {
     .unwrap_or_else(|err| err.to_compile_error().into())
 }
 
+#[proc_macro_derive(TryBean)]
+pub fn derive_try_bean(input: TokenStream) -> TokenStream {
+  impl_derive_try_bean(parse_macro_input!(input as DeriveInput))
+    .unwrap_or_else(|err| err.to_compile_error().into())
+}
+
+#[proc_macro_derive(AsyncTryBean)]
+pub fn derive_async_try_bean(input: TokenStream) -> TokenStream {
+  impl_derive_async_try_bean(parse_macro_input!(input as DeriveInput))
+    .unwrap_or_else(|err| err.to_compile_error().into())
+}
+
 fn impl_derive_bean(input: DeriveInput) -> syn::Result<TokenStream> {
   let ident = &input.ident;
   let fields = get_fields(&input)?
@@ -88,6 +100,80 @@ fn impl_derive_async_bean(input: DeriveInput) -> syn::Result<TokenStream> {
             async fn create(context: &beany::BeansContext) -> Self {
                 Self {
                     #(#fields),*
+                }
+            }
+        }
+    }
+    .into(),
+  )
+}
+
+fn impl_derive_try_bean(input: DeriveInput) -> syn::Result<TokenStream> {
+  let ident = &input.ident;
+  let fields = get_fields(&input)?
+    .iter()
+    .map(|field| {
+      let field_ident = &field.ident;
+      let field_ty = &field.ty;
+
+      if is_arc_type(field_ty) {
+        quote! {
+            #field_ident: context.try_get()?
+        }
+      } else {
+        quote! {
+            #field_ident: (*context.try_get::<#field_ty>()?).clone()
+        }
+      }
+    })
+    .collect::<Vec<_>>();
+
+  Ok(
+    quote! {
+        impl beany::TryBean for #ident {
+            type Error = Box<dyn std::error::Error>;
+
+            fn create(context: &beany::BeansContext) -> Result<Self, Self::Error> {
+                Ok(Self {
+                    #(#fields),*
+                })
+            }
+        }
+    }
+    .into(),
+  )
+}
+
+fn impl_derive_async_try_bean(input: DeriveInput) -> syn::Result<TokenStream> {
+  let ident = &input.ident;
+  let fields = get_fields(&input)?
+    .iter()
+    .map(|field| {
+      let field_ident = &field.ident;
+      let field_ty = &field.ty;
+
+      if is_arc_type(field_ty) {
+        quote! {
+            #field_ident: context.try_get_async().await?
+        }
+      } else {
+        quote! {
+            #field_ident: (*context.try_get_async::<#field_ty>().await?).clone()
+        }
+      }
+    })
+    .collect::<Vec<_>>();
+
+  Ok(
+    quote! {
+        impl beany::AsyncTryBean for #ident {
+            type Error = Box<dyn std::error::Error>;
+
+            fn create(context: &beany::BeansContext) -> impl std::future::Future<Output = Result<Self, Self::Error>> + Send {
+                async move {
+                    Ok(Self {
+                        #(#fields),*
+                    })
                 }
             }
         }
