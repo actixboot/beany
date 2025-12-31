@@ -1,6 +1,6 @@
 [package]
 name = "beany"
-version = "0.1.4"
+version = "0.1.5"
 edition = "2024"
 authors = ["Dawid Ratajczak"]
 description = "Lighweight DI container for Rust in spring style"
