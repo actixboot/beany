@@ -3,6 +3,8 @@ use std::collections::HashMap;
 use std::sync::Arc;
 use parking_lot::RwLock;
 
+pub mod codegen;
+
 #[derive(Debug, Default)]
 pub struct BeansContext {
   beans: RwLock<HashMap<TypeId, Arc<dyn Any + Send + Sync>>>,

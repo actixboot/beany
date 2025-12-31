@@ -1,0 +1,1 @@
+pub use beany_codegen::Bean;
